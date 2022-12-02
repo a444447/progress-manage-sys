@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"progress-manage-system/model"
+	"progress-manage-system/router"
+)
 
 func main() {
-	fmt.Println("hello, world")
+	model.InitDB()
+	router.InitRouter()
 }
