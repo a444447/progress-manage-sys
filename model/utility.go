@@ -1,8 +1,12 @@
 package model
 
 import (
+	"errors"
+	"fmt"
+	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"log"
+	"strconv"
 )
 
 // 数据库连接失败
@@ -31,4 +35,38 @@ func ComparePassword(hashedPwd, plainPwd string) bool {
 		return false
 	}
 	return true
+}
+
+// 遍历获得gin请求的所有参数(post方法)
+func DataMapByRequest(c *gin.Context) (map[string]interface{}, error) {
+	//我们先解析Form(这里解析的是post方法)
+	contentType := c.GetHeader("Content-Type")
+	data := make(map[string]interface{})
+	switch contentType {
+	case "application/x-www-form-urlencoded":
+		fmt.Println("form type")
+		c.Request.ParseForm()
+		//c.PostForm("") //为了调用initFormCache
+		for k, v := range c.Request.PostForm {
+			if len(v) > 1 {
+				errMsg := fmt.Sprintf("[%+v]设置了%d次, 但只能设置一次", k, len(v))
+				return nil, errors.New(errMsg)
+			}
+			if k == "ID" || k == "id" {
+				idInt, _ := strconv.Atoi(c.PostForm(k))
+				data[k] = idInt
+			} else {
+				data[k] = c.PostForm(k)
+			}
+		}
+	case "application/json":
+		fmt.Println("json type")
+		c.BindJSON(&data)
+	}
+
+	return data, nil
+	//get请求通过url传递参数的解析方式
+	//for k, _ := range c.Request.URL.Query() {
+	//	fmt.Printf("key:%+v value:%+v\n", k, c.Query(k))
+	//}
 }
