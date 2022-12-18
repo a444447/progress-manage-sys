@@ -2,16 +2,17 @@ package model
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"progress-manage-system/utils"
 	"time"
 )
 
-var db *gorm.DB
+var Db *gorm.DB
 var err error
 
-func InitDB() {
+func InitDB() (*gorm.DB, error) {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		utils.DbUser,
 		utils.DbPassport,
@@ -19,11 +20,13 @@ func InitDB() {
 		utils.DbPort,
 		utils.DbName,
 	)
-	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	unableConnDB(err)
-	db.AutoMigrate(&User{}, &Thesis{})
+	Db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		return Db, errors.Wrapf(err, "error->InitDB")
+	}
+	Db.AutoMigrate(&User{}, &Thesis{}, &File{})
 
-	sqlDB, err := db.DB()
+	sqlDB, err := Db.DB()
 	unableConnDB(err)
 	//SetMaxIdleConns 设置空闲连接池中连接最大数量
 	sqlDB.SetMaxIdleConns(10)
@@ -31,4 +34,6 @@ func InitDB() {
 	sqlDB.SetMaxOpenConns(100)
 	// SetConnMaxLifetime 设置了连接可复用的最大时间。
 	sqlDB.SetConnMaxLifetime(time.Hour)
+
+	return Db, nil
 }

@@ -2,8 +2,9 @@ package model
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"gorm.io/gorm"
-	"progress-manage-system/utils/errmsg"
+	. "progress-manage-system/utils/ecode"
 )
 
 type User struct {
@@ -16,28 +17,28 @@ type User struct {
 }
 
 // 查询用户是否存在
-func CheckUser(iden string) int {
+func CheckUser(iden string) error {
 	var user User
-	db.Select("id").Where("identity_id = ?", iden).First(&user)
+	Db.Select("id").Where("identity_id = ?", iden).First(&user)
 	if user.ID > 0 {
-		return errmsg.ErrorUserExisted
+		return ErrUserExisted
 	}
-	return errmsg.SUCCESS
+	return nil
 }
 
 // 新增用户
 func CreateUser(data *User) error {
 
 	//先检测是否以及存在用户
-	if code := CheckUser(data.IdentityID); code == errmsg.ErrorUserExisted {
-		return fmt.Errorf("record has existed")
+	if ec := CheckUser(data.IdentityID); Cause(ec).Equal(ErrUserExisted) {
+		return ec
 	}
 	data.PassWord, err = hashAndSalt(data.PassWord)
 	if err != nil {
-		return fmt.Errorf("hash and salt fail ")
+		return errors.Wrapf(err, "error->CreateUser #%d", 1)
 	}
-	if err := db.Create(&data).Error; err != nil {
-		return fmt.Errorf("create user fail")
+	if err := Db.Create(&data).Error; err != nil {
+		return errors.Wrapf(err, "error->CreateUser #%d", 2)
 	}
 	return nil
 }
@@ -47,8 +48,8 @@ func CreateUser(data *User) error {
 // 查询单个用户
 func GetUserById(id int) (User, error) {
 	var user User
-	if err := db.Where("ID = ?", id).First(&user).Error; err != nil {
-		return user, fmt.Errorf("get user by id fail:%s", err.Error())
+	if err := Db.Where("ID = ?", id).First(&user).Error; err != nil {
+		return user, err
 	}
 
 	return user, nil
@@ -61,45 +62,44 @@ func GetUsers(data map[string]interface{}) ([]User, error) {
 		fmt.Printf("%+v\n", k)
 		fmt.Printf("%+v\n", v)
 	}
-	if err := db.Where(data).Find(&users).Error; err != nil {
-		return nil, fmt.Errorf("get users fail:%s", err.Error())
+	if err := Db.Where(data).Find(&users).Error; err != nil {
+		return nil, err
 	}
 	return users, nil
 
 }
 
 // 删除用户
-func DelUser(id int) int {
+func DelUser(id int) error {
 	var user User
-	if err := db.Where("id = ?", id).Delete(&user).Error; err != nil {
-		fmt.Println(err.Error())
-		return errmsg.ERROR
+	if err := Db.Where("id = ?", id).Delete(&user).Error; err != nil {
+		return errors.Wrapf(err, "error->DelUser #%d", 1)
 	}
-	return errmsg.SUCCESS
+	return nil
 }
 
 // 更新用户
 func UpdateUser(id int, data map[string]interface{}) error {
 	var user User
-	if err := db.Model(&user).Where("id = ?", id).Updates(data).Error; err != nil {
-		return err
+	if err := Db.Model(&user).Where("id = ?", id).Updates(data).Error; err != nil {
+		return errors.Wrapf(err, "error->UpdateUser #%d", 1)
 	}
 	return nil
 }
 
 // 登陆验证
-func CheckLogin(username, password string) (User, int) {
+func CheckLogin(username, password string) (User, error) {
 	var user User
-	db.Where("identity_id = ?", username).First(&user)
+	Db.Where("identity_id = ?", username).First(&user)
 	//账号不存在
 	if user.ID == 0 {
-		return user, errmsg.ErrorUserNotExist
+		return user, ErrUserNotFound
 	}
 	//密码错误
 	if !ComparePassword(user.PassWord, password) {
-		return user, errmsg.ErrorPasswordWrong
+		return user, ErrPasswordWrong
 	}
 	//无法以此权限登陆
 
-	return user, errmsg.SUCCESS
+	return user, Ok
 }

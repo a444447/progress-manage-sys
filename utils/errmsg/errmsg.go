@@ -15,7 +15,9 @@ const (
 	ErrorTokenNotExist = 1005
 	ErrorTokenRuntime  = 1006
 	ErrorTokenFmt      = 1007
-	ErrorLoginParams   = 1008
+	ErrorTokenType     = 1008
+	ErrorLoginParams   = 1009
+	ErrorTokenWrong    = 1010
 
 	// 定义毕业论文模块的错误码, 2000开头
 
@@ -34,6 +36,8 @@ var codeMsg = map[int]string{
 	ErrorTokenNotExist: "token不存在",
 	ErrorTokenRuntime:  "token过期",
 	ErrorTokenFmt:      "token格式错误",
+	ErrorTokenType:     "token类型有误,查看是否放置在header",
+	ErrorTokenWrong:    "token校验错误",
 	ErrorLoginParams:   "登陆传递参数有误",
 }
 

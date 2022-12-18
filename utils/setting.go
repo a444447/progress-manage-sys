@@ -9,6 +9,7 @@ import (
 var (
 	AppMode  string
 	HttpPort string
+	JwtKey   string
 
 	Db         string
 	DbHost     string
@@ -16,6 +17,12 @@ var (
 	DbUser     string
 	DbPassport string
 	DbName     string
+
+	COS_BUCKET_NAME string
+	COS_REGION      string
+	COS_APP_ID      string
+	COS_SECRET_ID   string
+	COS_SECRET_KEY  string
 )
 
 func init() {
@@ -26,6 +33,7 @@ func init() {
 	}
 	LoadServer(cfg)
 	LoadDatabase(cfg)
+	LoadCos(cfg)
 }
 
 func LoadServer(cfg *ini.File) {
@@ -37,6 +45,7 @@ func LoadServer(cfg *ini.File) {
 		}
 		return in
 	})
+	JwtKey = sec.Key("JwtKey").MustString("progress_key")
 }
 
 func LoadDatabase(cfg *ini.File) {
@@ -52,4 +61,13 @@ func LoadDatabase(cfg *ini.File) {
 	DbUser = sec.Key("DbUser").MustString("root")
 	DbPassport = sec.Key("DbPassport").MustString("root")
 	DbName = sec.Key("DbName").MustString("user")
+}
+
+func LoadCos(cfg *ini.File) {
+	sec := cfg.Section("cos")
+	COS_BUCKET_NAME = sec.Key("COS_BUCKET_NAME").MustString("progress-management")
+	COS_REGION = sec.Key("COS_REGION").MustString("ap-chengdu")
+	COS_APP_ID = sec.Key("COS_APP_ID").MustString("1304266993")
+	COS_SECRET_ID = sec.Key("COS_SECRET_ID").String()
+	COS_SECRET_KEY = sec.Key("COS_SECRET_KEY").String()
 }

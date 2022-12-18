@@ -1,9 +1,9 @@
 package model
 
 import (
-	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
 	"log"
 	"strconv"
@@ -45,7 +45,9 @@ func DataMapByRequest(c *gin.Context) (map[string]interface{}, error) {
 	switch contentType {
 	case "application/x-www-form-urlencoded":
 		fmt.Println("form type")
-		c.Request.ParseForm()
+		if err := c.Request.ParseForm(); err != nil {
+			return nil, errors.Wrapf(err, "error->DataMapByRequest #%d", 1)
+		}
 		//c.PostForm("") //为了调用initFormCache
 		for k, v := range c.Request.PostForm {
 			if len(v) > 1 {
@@ -59,9 +61,13 @@ func DataMapByRequest(c *gin.Context) (map[string]interface{}, error) {
 				data[k] = c.PostForm(k)
 			}
 		}
+		break
 	case "application/json":
 		fmt.Println("json type")
-		c.BindJSON(&data)
+		if err := c.BindJSON(&data); err != nil {
+			return nil, errors.Wrapf(err, "error->DataMapByRequest #%d", 2)
+		}
+		break
 	}
 
 	return data, nil
