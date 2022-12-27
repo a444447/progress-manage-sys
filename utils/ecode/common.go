@@ -11,6 +11,7 @@ var (
 	ErrFind      = add(10005, "数据库查找出错")
 	ErrMapData   = add(10006, "解析form-data或者json出错")
 	ErrParamData = add(10007, "解析url中的参数失败")
+	ErrBindModel = add(10008, "JSON绑定结构体失败")
 
 	//用户模块
 	ErrUserNotFound  = add(20101, "登陆失败:用户名不存在")
@@ -21,4 +22,7 @@ var (
 	//论文模块
 	ErrThesisStuId     = add(20201, "添加失败:不存在库中的学生")
 	ErrThesisTeacherId = add(20202, "添加失败: 不存在库中的教师")
+
+	//task模块
+	ErrTaskNotFound = add(20301, "库中不存在的任务id")
 )

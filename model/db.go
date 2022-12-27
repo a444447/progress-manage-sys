@@ -24,7 +24,7 @@ func InitDB() (*gorm.DB, error) {
 	if err != nil {
 		return Db, errors.Wrapf(err, "error->InitDB")
 	}
-	Db.AutoMigrate(&User{}, &Thesis{}, &File{})
+	Db.AutoMigrate(&User{}, &Thesis{}, &File{}, &Task{})
 
 	sqlDB, err := Db.DB()
 	unableConnDB(err)

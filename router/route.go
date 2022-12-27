@@ -9,6 +9,7 @@ import (
 
 func InitRouter() {
 	r := gin.New()
+	r.Use(middware.Logger())
 	r.Use(gin.Recovery())
 
 	auth := r.Group("api/v1")
@@ -31,6 +32,13 @@ func InitRouter() {
 		auth.PUT("upload", fileController.Upload)
 		auth.POST("download", fileController.Download)
 		auth.DELETE("file/:id", fileController.Delele)
+
+		//task Controller
+		auth.POST("task/add", taskController.CreateTask)
+		auth.POST("task/findall", taskController.FindAllTasks)
+		auth.DELETE("task/:id", taskController.DeleteTasks)
+		auth.PUT("task/:id", taskController.UpdateTasks)
+		auth.POST("task/findbymap", taskController.FindByMap)
 	}
 
 	router := r.Group("api/v1")
